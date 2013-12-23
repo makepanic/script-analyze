@@ -1,3 +1,7 @@
 {
-    "threads": 5
+    "database": {
+        "server": "192.168.2.106:27018",
+        "name": "script-analyze",
+        "table": "page"
+    }
 }
