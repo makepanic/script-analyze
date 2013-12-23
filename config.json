@@ -1,6 +1,6 @@
 {
     "database": {
-        "server": "192.168.2.106:27018",
+        "server": "192.168.2.106:27017",
         "name": "script-analyze",
         "table": "page"
     }
