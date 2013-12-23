@@ -1,0 +1,35 @@
+{
+  "name": "script-analyze",
+  "version": "0.0.0",
+  "main": "lib/script-analyze.js",
+  "description": "App that analyzes script tags on websites.",
+  "homepage": "https://github.com/makepanic/script-analyze",
+  "bugs": "https://github.com/makepanic/script-analyze/issues",
+  "author": {
+    "name": "Christian",
+    "email": "me@rndm.de",
+    "url": "rndm.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/makepanic/script-analyze"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.7.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-watch": "~0.5.0",
+    "load-grunt-tasks": "~0.2.0",
+    "time-grunt": "~0.2.0",
+    "jshint-stylish": "~0.1.3"
+  },
+  "dependencies": {
+    "nconf": "~0.6.9",
+    "request": "~2.30.0",
+    "cheerio": "~0.12.4"
+  }
+}
