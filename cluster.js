@@ -6,7 +6,10 @@ var numCPUs = require('os').cpus().length,
     collection,
     pages,
     start = Date.now(),
-    end;
+    end,
+    numPagesFromBeginning = 5000;
+
+numCPUs = 1;
 
 if (cluster.isMaster) {
     db = require('./lib/db');
@@ -17,7 +20,7 @@ if (cluster.isMaster) {
         collection = result.pages;
 
         scriptAnalyze.loadList('./res/top-1m.csv').then(function(data){
-            data = data.splice(0,1000);
+            data = data.splice(0, numPagesFromBeginning);
 
             var chunkSize = Math.ceil(data.length / numCPUs),
                 chunksReceived = 0;
