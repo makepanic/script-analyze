@@ -7,9 +7,10 @@ var numCPUs = require('os').cpus().length,
     pages,
     start = Date.now(),
     end,
-    numPagesFromBeginning = 5000;
+    numOffset = 6000,
+    numPagesFromBeginning = 500;
 
-numCPUs = 1;
+numCPUs = 4;
 
 if (cluster.isMaster) {
     db = require('./lib/db');
@@ -20,7 +21,7 @@ if (cluster.isMaster) {
         collection = result.pages;
 
         scriptAnalyze.loadList('./res/top-1m.csv').then(function(data){
-            data = data.splice(0, numPagesFromBeginning);
+            data = data.splice(numOffset, numPagesFromBeginning);
 
             var chunkSize = Math.ceil(data.length / numCPUs),
                 chunksReceived = 0;
@@ -33,9 +34,15 @@ if (cluster.isMaster) {
                 var worker = cluster.fork();
 
                 worker.on('message', function(data){
+                    if (data.analyzeDone){
+
+                    }
+
                     if (data.workerDone){
                         chunksReceived++;
                         pages = pages.concat(data.pages);
+
+                        console.log('chunksReceived', chunksReceived, numCPUs);
 
                         if (chunksReceived === numCPUs){
                             console.log('master ready pages:', pages.length);
@@ -62,7 +69,15 @@ if (cluster.isMaster) {
     process.on('message', function(data) {
         // we only want to intercept messages that have a chat property
         if(data.start){
+            scriptAnalyze.analyze(data.data, function(result){
+                process.send({
+                    analyzeDone: true,
+                    result: result
+                });
+            });
+
             scriptAnalyze.analyze(data.data).then(function(pages){
+                console.log('analyze done, sending process result');
                 process.send({
                     workerDone: true,
                     pages: pages
