@@ -1,4 +1,19 @@
-var numCPUs = require('os').cpus().length,
+/**
+ * cmdline params:
+ * --threads Number - Number of threads
+ * --offset Number - Offset from the first item of the csv file
+ * --size Number - How many items to load before inserting into the database
+ */
+
+var argv = require('optimist')
+        .usage('Usage: $0 --offset [num] --size [num] --threads [num]')
+        .alias('t', 'threads')
+        .alias('o', 'offset')
+        .alias('s', 'size')
+        .default('threads', require('os').cpus().length)
+        .default('offset', 0)
+        .default('size', 10)
+        .argv,
     cluster = require('cluster'),
     scriptAnalyze = require('./lib/script-analyze'),
     db,
@@ -7,10 +22,13 @@ var numCPUs = require('os').cpus().length,
     pages,
     start = Date.now(),
     end,
-    numOffset = 6000,
-    numPagesFromBeginning = 500;
+    numCPUs = argv.threads,
+    numOffset = argv.offset,
+    numPagesFromBeginning = argv.size;
 
-numCPUs = 4;
+console.log("using threads: ", numCPUs);
+console.log("using offset: ", numOffset);
+console.log("using size: ", numPagesFromBeginning);
 
 if (cluster.isMaster) {
     db = require('./lib/db');
@@ -34,10 +52,6 @@ if (cluster.isMaster) {
                 var worker = cluster.fork();
 
                 worker.on('message', function(data){
-                    if (data.analyzeDone){
-
-                    }
-
                     if (data.workerDone){
                         chunksReceived++;
                         pages = pages.concat(data.pages);
@@ -49,6 +63,7 @@ if (cluster.isMaster) {
                             db.store(pages, collection).then(function(msg){
                                 end = Date.now();
                                 console.log('insert duration', end - start, 'ms');
+                                process.exit();
                             });
                         }
                     }
@@ -69,19 +84,13 @@ if (cluster.isMaster) {
     process.on('message', function(data) {
         // we only want to intercept messages that have a chat property
         if(data.start){
-            scriptAnalyze.analyze(data.data, function(result){
-                process.send({
-                    analyzeDone: true,
-                    result: result
-                });
-            });
-
             scriptAnalyze.analyze(data.data).then(function(pages){
                 console.log('analyze done, sending process result');
                 process.send({
                     workerDone: true,
                     pages: pages
                 });
+                process.exit();
             });
         }
     });
